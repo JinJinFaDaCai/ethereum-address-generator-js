@@ -15,9 +15,11 @@
     "@ethereumjs/tx": "^4.0.0",
     "@ethereumjs/util": "^8.0.0",
     "bip39": "^2.5.0",
+    "ethereumjs-tx": "^2.1.2",
     "ethereumjs-wallet": "^0.6.5",
     "js-sha3": "^0.8.0",
     "reload": "^3.0.5",
+    "vue": "^3.3.4",
     "watchify": "^4.0.0"
   }
 }

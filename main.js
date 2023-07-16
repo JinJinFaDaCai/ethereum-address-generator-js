@@ -1,9 +1,52 @@
 // Add imports here
-
+const BIP39 = require("bip39")
+// Generate a random mnemonic (uses crypto.randomBytes under the hood), defaults to 128-bits of entropy
+function generateMnemonic(){
+    return BIP39.generateMnemonic()
+}
+const hdkey = require('ethereumjs-wallet/hdkey')
+const Wallet = require('ethereumjs-wallet')
+const keccak256 = require('js-sha3').keccak256;
+const { FeeMarketEIP1559Transaction, Transaction } = require("@ethereumjs/tx");
+const { Chain, Hardfork, Common } = require("@ethereumjs/common");
+const { bigIntToHex } = require("@ethereumjs/util");
 
 // Add functions here
+function generateSeed(mnemonic){
+    return BIP39.mnemonicToSeed(mnemonic)
+}
 
+function generatePrivKey(mnemonic){
+    const seed = generateSeed(mnemonic)
+    return hdkey.fromMasterSeed(seed).derivePath(`m/44'/60'/0'/0/0`).getWallet().getPrivateKey()
+}
 
+function derivePubKey(privKey){
+    const wallet = Wallet.fromPrivateKey(privKey)    
+    return wallet.getPublicKey()
+}
+
+function deriveEthAddress(pubKey){
+    const address = keccak256(pubKey) // keccak256 hash of  publicKey
+    // Get the last 20 bytes of the public key
+    return "0x" + address.substring(address.length - 40, address.length)    
+}
+
+function signLegacyTx(privKey, txData){  
+    const txParams = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Istanbul })
+    const tx = Transaction.fromTxData(txData, { txParams })
+    return tx.sign(privKey)
+}
+
+function signEIP1559Tx(privKey, txData){  
+    const txOptions = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London })
+    const tx = FeeMarketEIP1559Transaction.fromTxData(txData, { txOptions })
+    return tx.sign(privKey)
+}
+
+function getSignerAddress(signedTx){
+    return "0x" + signedTx.getSenderAddress().toString('hex')
+}
 /*
 
 Do not edit code below this line.
